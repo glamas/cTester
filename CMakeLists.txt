@@ -28,16 +28,8 @@ add_subdirectory(extern/SDL2)
 add_subdirectory(extern/SDL2_ttf)
 add_subdirectory(extern/SDL_image)
 
-add_executable(cTester
-    src/main.c
-    src/gui_sdl.c
-    src/gui_sdl_widget.c
-)
-target_include_directories(cTester PRIVATE ${lua_SOURCE_DIR}/src)
-target_link_directories(cTester PRIVATE ${lua_SOURCE_DIR}/src)
-target_link_libraries(cTester PRIVATE lua)
-add_dependencies(cTester lua_lib)
-target_link_libraries(cTester PRIVATE SDL2-static)
-target_link_libraries(cTester PRIVATE SDL2main)
-target_link_libraries(cTester PRIVATE SDL2_ttf)
-target_link_libraries(cTester PRIVATE SDL2_image)
+## main
+add_subdirectory(src)
+
+## demo
+add_subdirectory(test/resize_image)
