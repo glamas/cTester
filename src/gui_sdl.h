@@ -8,6 +8,7 @@
 #define MAX_FRAME_COUNTER 1000
 #define REFRESH 1
 #define NOREFRESH 0
+#define MAX_FONT_GROUP 6
 
 typedef struct {
     SDL_Window *window;
@@ -60,7 +61,7 @@ typedef struct Widget {
     int (*updateData)(struct Widget *, EventData);
     SDL_Color fg;
     SDL_Color bg;
-    int toUpdate;
+    int to_update;
     void *data1;
     void *data2;
 } Widget;
@@ -71,20 +72,46 @@ typedef struct WidgetNode {
     struct WidgetNode *next;
 } WidgetNode;
 
+
+typedef struct FontInfo {
+    TTF_Font *font;
+    int size;
+    int style;
+    float scale;
+    const char *alias;
+} FontInfo;
+
+typedef struct FontAttr {
+    int to_update;
+    int codepoint;
+    SDL_Surface *glyph;
+    int size;
+    int style;
+    SDL_Color fg;
+    SDL_Color bg;
+} FontAttr;
+
+
 typedef int (*dataCallBack)(Widget *, EventData);
 
-extern TTF_Font *font;
+// extern TTF_Font *font;
 extern EventData UserData;
 extern WidgetNode *layout;
 
-int gui_sdl_init(SDL_Window *win);
-void gui_sdl_draw();
-void gui_sdl_delay();
-void gui_sdl_free();
+int GuiSDL_Init(SDL_Window *win);
+void GuiSDL_Draw();
+void GuiSDL_Delay();
+void GuiSDL_Free();
 
 
-void gui_sdl_init_widget(Widget *);
-void gui_sdl_add_widget(Widget*);
-void gui_sdl_widget_connect(Widget *, dataCallBack);
+void GuiSDL_InitWidget(Widget *);
+void GuiSDL_AddWidget(Widget*);
+void GuiSDL_ConnectWidget(Widget *, dataCallBack);
+
+
+int GuiSDL_InitFont(const char *path, const char *alias, int ptsize, int style);
+FontInfo * GuiSDL_GetFont(const char *);
+void GuiSDL_SetFontSize(FontInfo *font, int ptsize);
+void GuiSDL_SetFontStyle(FontInfo *font, int style);
 
 #endif

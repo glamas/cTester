@@ -3,12 +3,12 @@
 #include "gui_sdl_widget.h"
 #include "gui_sdl_ui.h"
 
-extern TTF_Font *font;
+// extern TTF_Font *font;
 extern WidgetNode *layout;
 extern EventData UserData;
 
 int button_theme(Widget *button){
-    if (button->toUpdate == 0) {
+    if (button->to_update == 0) {
         SDL_RenderCopy(UserData.renderer, button->texture, NULL, &button->ren_rect);
         return NOREFRESH;
     }
@@ -17,8 +17,9 @@ int button_theme(Widget *button){
     SDL_FreeSurface(button->surface);
     if (button->texture)
         SDL_DestroyTexture(button->texture);
+    FontInfo * font_info = GuiSDL_GetFont("main");
     // text surface
-    SDL_Surface *textSurface = TTF_RenderUTF8_Shaded(font, button->text, button->fg, button->bg);
+    SDL_Surface *textSurface = TTF_RenderUTF8_Shaded(font_info->font, button->text, button->fg, button->bg);
     // theme
     SDL_Rect borderRect = {.w=textSurface->w + 2, .h=textSurface->h + 2};
     SDL_Surface *buttonSurface = SDL_CreateRGBSurface(0, borderRect.w, borderRect.h, 32, 0, 0, 0, 0);
@@ -49,26 +50,27 @@ int button_theme(Widget *button){
     button->texture = SDL_CreateTextureFromSurface(UserData.renderer, buttonSurface);
     SDL_FreeSurface(textSurface);
     SDL_RenderCopy(UserData.renderer, button->texture, NULL, &button->ren_rect);
-    button->toUpdate = 0;
+    button->to_update = 0;
     return REFRESH;
 }
 
 Widget * Button(char *id, char *text, int x, int y){
     Widget *btn;
     btn = (Widget *)malloc(sizeof(Widget));
-    gui_sdl_init_widget(btn);
+    GuiSDL_InitWidget(btn);
     btn->id = id;
     btn->text = text;
     btn->ren_rect.x = x;
     btn->ren_rect.y = y;
     btn->updateSurface = &button_theme;
-    gui_sdl_add_widget(btn);
+    GuiSDL_AddWidget(btn);
     return btn;
 }
 
 int debug_theme(Widget *widget) {
     char info[256];
     char mouse_click[20];
+    FontInfo * font_info = GuiSDL_GetFont("main");
     if (UserData.mouse.down) {
         sprintf(mouse_click, "%s %s",
             UserData.mouse.clicks == 2 ? "double" : "",
@@ -80,7 +82,7 @@ int debug_theme(Widget *widget) {
         mouse_click[0] = '\0';
     }
     sprintf(info, "FPS:%-4d\nMouse:(%d, %d) %s\nInput:%c", UserData.fps, UserData.mouse.x, UserData.mouse.y, mouse_click, UserData.input);
-    SDL_Surface *surface = TTF_RenderUTF8_Shaded_Wrapped(font, info, widget->fg, widget->bg, 0);
+    SDL_Surface *surface = TTF_RenderUTF8_Shaded_Wrapped(font_info->font, info, widget->fg, widget->bg, 0);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(UserData.renderer, surface);
     widget->ren_rect.w = surface->w;
     widget->ren_rect.h = surface->h;
@@ -94,12 +96,47 @@ int debug_theme(Widget *widget) {
 Widget * DebugInfo(char *id, int x, int y){
     Widget *w;
     w = (Widget *)malloc(sizeof(Widget));
-    gui_sdl_init_widget(w);
+    GuiSDL_InitWidget(w);
     w->id = id;
     w->ren_rect.x = x;
     w->ren_rect.y = y;
-    w->toUpdate = 1;
+    w->to_update = 1;
     w->updateSurface = &debug_theme;
-    gui_sdl_add_widget(w);
+    GuiSDL_AddWidget(w);
+    return w;
+}
+
+static int text_theme(Widget *widget) {
+    if (widget->to_update == 0) {
+        SDL_RenderCopy(UserData.renderer, widget->texture, NULL, &widget->ren_rect);
+        return NOREFRESH;
+    }
+    // free first
+    SDL_FreeSurface(widget->surface);
+    if (widget->texture)
+        SDL_DestroyTexture(widget->texture);
+    FontInfo * font_info = GuiSDL_GetFont("main");
+    GuiSDL_SetFontStyle(font_info, TTF_STYLE_ITALIC);
+    widget->surface = TTF_RenderUTF8_Shaded_Wrapped(font_info->font, widget->text, widget->fg, widget->bg, 0);
+    widget->texture = SDL_CreateTextureFromSurface(UserData.renderer, widget->surface);
+    widget->ren_rect.w = widget->surface->w;
+    widget->ren_rect.h = widget->surface->h;
+    SDL_RenderCopy(UserData.renderer, widget->texture, NULL, &widget->ren_rect);
+    widget->to_update = 0;
+    GuiSDL_SetFontStyle(font_info, TTF_STYLE_NORMAL);
+    return REFRESH;
+}
+
+Widget * Text(char *id, char *text, int x, int y){
+    Widget *w;
+    w = (Widget *)malloc(sizeof(Widget));
+    GuiSDL_InitWidget(w);
+    w->id = id;
+    w->text = text;
+    w->ren_rect.x = x;
+    w->ren_rect.y = y;
+    w->to_update = 1;
+    w->updateSurface = &text_theme;
+    GuiSDL_AddWidget(w);
     return w;
 }

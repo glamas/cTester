@@ -11,7 +11,7 @@ int main(int args, char *argv[])
     SDL_Window *win = SDL_CreateWindow("cTester", 100, 100, SCREEN_WIDTH,
         SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
-    gui_sdl_init(win);
+    GuiSDL_Init(win);
     // layout
 
     while ( ! UserData.quit) {
@@ -24,12 +24,12 @@ int main(int args, char *argv[])
             }
         }
         // draw
-        gui_sdl_draw();
+        GuiSDL_Draw();
 
         // delay
-        gui_sdl_delay();
+        GuiSDL_Delay();
     }
-    gui_sdl_free();
+    GuiSDL_Free();
 
     return 0;
 }

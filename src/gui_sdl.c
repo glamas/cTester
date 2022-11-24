@@ -4,9 +4,9 @@
 
 
 /* extern var init */
-EventData UserData = {.quit=0};
+EventData UserData = {.quit=0, .frame_counter=0};
 WidgetNode *layout = NULL;
-TTF_Font *font = NULL;
+// TTF_Font *font = NULL;
 
 
 /* static var */
@@ -15,6 +15,8 @@ static int frame = 60;
 static Uint64 delay_counter = 0;
 static SDL_Window *window;
 static SDL_Renderer *renderer;
+static int font_group_idx = 0;
+static FontInfo font_group[MAX_FONT_GROUP] = {0};
 
 
 static void ren_update_widget_data(EventData eData){
@@ -71,7 +73,7 @@ static int ren_update_layout() {
 }
 
 
-void gui_sdl_draw(){
+void GuiSDL_Draw(){
     float elapsed = 0.0f;
     Uint64 counter = SDL_GetPerformanceCounter();
 
@@ -126,11 +128,11 @@ static int ren_event_watch(void* userdata, SDL_Event* event)
                     SetTimer(sys_event->msg.win.hwnd, DRAW_TIMER_ID, (int)(1000 / frame), NULL);
                     break;
                 case WM_TIMER:
-                    gui_sdl_draw();
+                    GuiSDL_Draw();
                     break;
                 case WM_SIZE:
                     if (DRAW_TIMER_ID)
-                        gui_sdl_draw();
+                        GuiSDL_Draw();
                     break;
                 case WM_EXITSIZEMOVE:
                 case WM_EXITMENULOOP:
@@ -146,7 +148,7 @@ static int ren_event_watch(void* userdata, SDL_Event* event)
 }
 
 
-int gui_sdl_init(SDL_Window *win) {
+int GuiSDL_Init(SDL_Window *win) {
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
     // assert(win);
     if (SDL_Init(SDL_INIT_EVERYTHING) !=0) {
@@ -175,12 +177,13 @@ int gui_sdl_init(SDL_Window *win) {
 #else
       fontPath = "./SourceHanSerif-VF.ttf.ttc";
 #endif
-    font = TTF_OpenFont(fontPath, fontSize);
-    if ( ! font ){
-        SDL_Log("Unable to load font: '%s'!\n"
-               "SDL2_ttf Error: %s\n", fontPath, TTF_GetError());
-        return 1;
-    }
+    GuiSDL_InitFont(fontPath, "main", fontSize, TTF_STYLE_NORMAL);
+    // font = TTF_OpenFont(fontPath, fontSize);
+    // if ( ! font ){
+    //     SDL_Log("Unable to load font: '%s'!\n"
+    //            "SDL2_ttf Error: %s\n", fontPath, TTF_GetError());
+    //     return 1;
+    // }
     // SDL_StartTextInput();
     SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
     SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
@@ -189,7 +192,7 @@ int gui_sdl_init(SDL_Window *win) {
 }
 
 
-void gui_sdl_delay() {
+void GuiSDL_Delay() {
     Uint64 nCurrCounter;
     float elapsed = 0.0f;
     nCurrCounter = SDL_GetPerformanceCounter();
@@ -221,7 +224,7 @@ static void free_layout() {
 }
 
 
-void gui_sdl_free(){
+void GuiSDL_Free(){
     free_layout();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
@@ -230,8 +233,8 @@ void gui_sdl_free(){
 
 
 /* widget */
-void gui_sdl_init_widget(Widget *w) {
-    w->toUpdate = 1;
+void GuiSDL_InitWidget(Widget *w) {
+    w->to_update = 1;
     w->surface = NULL;
     w->texture = NULL;
     w->bg.r = 0xFF;
@@ -248,7 +251,7 @@ void gui_sdl_init_widget(Widget *w) {
     w->updateData = NULL;
 }
 
-void gui_sdl_add_widget(Widget *w) {
+void GuiSDL_AddWidget(Widget *w) {
     WidgetNode *node, *p;
     node = (WidgetNode *)malloc(sizeof(WidgetNode));
     node->widget = w;
@@ -262,6 +265,39 @@ void gui_sdl_add_widget(Widget *w) {
     }
 }
 
-void gui_sdl_widget_connect(Widget *w, dataCallBack fn) {
+void GuiSDL_connectWidget(Widget *w, dataCallBack fn) {
     w->updateData = fn;
+}
+
+/* font */
+int GuiSDL_InitFont(const char *path, const char *alias, int ptsize, int style) {
+    font_group[font_group_idx].font = TTF_OpenFont(path, ptsize);
+    font_group[font_group_idx].alias = alias;
+    font_group[font_group_idx].size = ptsize;
+    font_group[font_group_idx].style = style;
+    font_group[font_group_idx].scale = 1.0;
+    font_group_idx += 1;
+    return 0;
+}
+FontInfo * GuiSDL_GetFont(const char *alias) {
+    for (int i=0; i < MAX_FONT_GROUP; i++){
+        if (0 == strcmp(font_group[i].alias, alias)){
+            return &font_group[i];
+        }
+    }
+    return NULL;
+}
+
+void GuiSDL_SetFontSize(FontInfo *font, int ptsize) {
+    if (font->size != ptsize){
+        TTF_SetFontSize(font->font, ptsize);
+        font->size = ptsize;
+    }
+}
+
+void GuiSDL_SetFontStyle(FontInfo *font, int style) {
+    if (font->style != style){
+        TTF_SetFontStyle(font->font, style);
+        font->style = style;
+    }
 }

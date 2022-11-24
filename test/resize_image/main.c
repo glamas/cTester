@@ -12,9 +12,10 @@ int main(int args, char *argv[])
     SDL_Window *win = SDL_CreateWindow("cTester", 100, 100, SCREEN_WIDTH,
         SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
-    gui_sdl_init(win);
+    GuiSDL_Init(win);
     // layout
     DebugInfo("debug_1", 0, 0);
+    Text("text_1","显示\n文字", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
     while ( ! UserData.quit) {
         while (SDL_PollEvent(&UserData.event)){
@@ -26,12 +27,12 @@ int main(int args, char *argv[])
             }
         }
         // draw
-        gui_sdl_draw();
+        GuiSDL_Draw();
 
         // delay
-        gui_sdl_delay();
+        GuiSDL_Delay();
     }
-    gui_sdl_free();
+    GuiSDL_Free();
 
     return 0;
 }
