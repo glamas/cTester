@@ -6,6 +6,7 @@ project(cTester
     LANGUAGES C
 )
 set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
 
