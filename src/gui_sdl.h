@@ -48,20 +48,33 @@ typedef struct {
 } EventData;
 
 
+typedef struct CharCell {
+    int ch;
+    int codepoint;
+    int to_update;
+    SDL_Surface *glyph;
+    int size;
+    int style;
+    SDL_Color fg;
+    SDL_Color bg;
+    struct CharCell * next;
+} CharCell;
+
 typedef struct Widget {
     char *id;
-    int tabFocus;
+    int tab_focus;      /* 1: can be focus by tab key */
+    int to_update;      /* 1: update surface and texture by updateSurface() */
     int x, y, h, w;
-    char *text;
+    CharCell *text;
     SDL_Surface *surface;
     SDL_Texture *texture;
     SDL_Rect rect;
     SDL_Rect ren_rect;
     int (*updateSurface)(struct Widget *);
     int (*updateData)(struct Widget *, EventData);
+    int (*freeWidget)(struct Widget *);
     SDL_Color fg;
     SDL_Color bg;
-    int to_update;
     void *data1;
     void *data2;
 } Widget;
@@ -81,15 +94,6 @@ typedef struct FontInfo {
     const char *alias;
 } FontInfo;
 
-typedef struct FontAttr {
-    int to_update;
-    int codepoint;
-    SDL_Surface *glyph;
-    int size;
-    int style;
-    SDL_Color fg;
-    SDL_Color bg;
-} FontAttr;
 
 
 typedef int (*dataCallBack)(Widget *, EventData);
@@ -105,7 +109,8 @@ void GuiSDL_Free();
 
 
 void GuiSDL_InitWidget(Widget *);
-void GuiSDL_AddWidget(Widget*);
+void GuiSDL_AddWidget(Widget *);
+int GuiSDL_CheckWidgetRedrawOrClean(Widget *);
 void GuiSDL_ConnectWidget(Widget *, dataCallBack);
 
 
@@ -113,5 +118,9 @@ int GuiSDL_InitFont(const char *path, const char *alias, int ptsize, int style);
 FontInfo * GuiSDL_GetFont(const char *);
 void GuiSDL_SetFontSize(FontInfo *font, int ptsize);
 void GuiSDL_SetFontStyle(FontInfo *font, int style);
+void GuiSDL_FreeCharCell(void *data);
+
+int GuiSDL_SetWidgetText(FontInfo*, Widget*, const char*);
+SDL_Surface * GuiSDL_GetWidgetTextSurface(FontInfo*, Widget*, int);
 
 #endif

@@ -31,5 +31,6 @@ int main(int args, char *argv[])
     }
     GuiSDL_Free();
 
+
     return 0;
 }
