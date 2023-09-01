@@ -33,3 +33,4 @@ add_subdirectory(extern/SDL_image)
 add_subdirectory(src)
 
 ## demo
+add_subdirectory(demo/lua_demo)
