@@ -358,7 +358,7 @@ int GuiSDL_SetWidgetText(FontInfo *font_info, Widget *w, const char *text) {
     while (*p != '\0') {
         cell = (CharCell *)malloc(sizeof(CharCell));
         charsize = GuiSDL_U8CharSize(p);
-        memcpy(cell->ch, p, charsize);
+        memcpy((void *)cell->ch, p, charsize);
         cell->to_update = 1;
         cell->size = font_info->size;
         cell->style = font_info->style;

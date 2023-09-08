@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 3.14..3.22)
+##  cmake -G Ninja .. -DSDL2TTF_VENDORED=1 -DBUILD_SHARED_LIBS=0 -DCMAKE_C_COMPILER=clang.exe -DCMAKE_CXX_COMPILER=clang++.exe
 
+cmake_minimum_required(VERSION 3.14..3.22)
 
 project(cTester
     VERSION 0.0.1
